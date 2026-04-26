@@ -66,16 +66,10 @@
 
 <script>
   document.getElementById("btnLogin").addEventListener("click", () => {
-    // スマホなら YouTube アプリを優先して開く
     const youtubeURL = "https://www.youtube.com/live_chat?v=CfFqv5FfQFU";
 
-    // アプリ起動を試みる（スマホ用）
-    window.location.href = "youtube://www.youtube.com/live_chat?v=CfFqv5FfQFU";
-
-    // 0.5秒後に通常ブラウザ版を開く（アプリが無い場合のフォールバック）
-    setTimeout(() => {
-      window.open(youtubeURL, "_blank");
-    }, 500);
+    // 新規タブで開く（最も安定）
+    window.open(youtubeURL, "_blank");
   });
 </script>
 
