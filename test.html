@@ -1,0 +1,288 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>A/B投票ページ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg-color: #ffffff;
+      --border-color: #dddddd;
+      --button-a: #ff4d4d;
+      --button-b: #4d8dff;
+      --button-disabled: #cccccc;
+      --text-color: #222222;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-color);
+      color: var(--text-color);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 8px;
+    }
+
+    /* PCレイアウト（1024px以上） */
+    @media (min-width: 1024px) {
+      .layout {
+        display: grid;
+        grid-template-columns: 2fr 1.2fr;
+        gap: 8px;
+        align-items: stretch;
+      }
+
+      .left-column {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .right-column {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .video-wrapper {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        border: 1px solid var(--border-color);
+      }
+
+      .vote-area {
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 8px;
+        min-height: 100px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .chat-wrapper {
+        flex: 1;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .chat-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+    }
+
+    /* スマホレイアウト（1023px以下） */
+    @media (max-width: 1023px) {
+      .layout {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .video-wrapper {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        border: 1px solid var(--border-color);
+      }
+
+      .vote-area {
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .chat-wrapper {
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+        height: 400px;
+      }
+
+      .chat-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+    }
+
+    .vote-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .vote-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .vote-button {
+      flex: 1;
+      padding: 12px 8px;
+      border: none;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #ffffff;
+      cursor: pointer;
+      transition: transform 0.05s ease, box-shadow 0.05s ease,
+        background-color 0.2s ease, opacity 0.2s ease;
+    }
+
+    .vote-button:active:not(.disabled) {
+      transform: scale(0.97);
+      box-shadow: none;
+    }
+
+    .vote-button-a {
+      background: var(--button-a);
+      box-shadow: 0 2px 4px rgba(255, 77, 77, 0.4);
+    }
+
+    .vote-button-b {
+      background: var(--button-b);
+      box-shadow: 0 2px 4px rgba(77, 141, 255, 0.4);
+    }
+
+    .vote-button.disabled {
+      background: var(--button-disabled);
+      box-shadow: none;
+      cursor: default;
+      opacity: 0.7;
+    }
+
+    .vote-status {
+      font-size: 13px;
+      min-height: 1.2em;
+    }
+
+    .vote-status.voted {
+      color: #008000;
+      font-weight: 600;
+    }
+
+    .vote-status.error {
+      color: #c00000;
+      font-weight: 600;
+    }
+
+    .video-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="layout">
+      <!-- 左カラム：YouTubeライブ映像 -->
+      <div class="left-column">
+        <div class="video-wrapper">
+          <iframe
+            class="video-iframe"
+            src="https://www.youtube.com/embed/CfFqv5FfQFU"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+
+      <!-- 右カラム：A/Bボタン + チャット欄 -->
+      <div class="right-column">
+        <div class="vote-area">
+          <div class="vote-title">どちらに投票しますか？</div>
+          <div class="vote-buttons">
+            <button id="voteA" class="vote-button vote-button-a">A に投票</button>
+            <button id="voteB" class="vote-button vote-button-b">B に投票</button>
+          </div>
+          <div id="voteStatus" class="vote-status"></div>
+        </div>
+
+        <div class="chat-wrapper">
+          <iframe
+            class="chat-iframe"
+            src="https://www.youtube.com/live_chat?v=CfFqv5FfQFU&embed_domain=lilium-ordinal.github.io"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const voteAButton = document.getElementById("voteA");
+      const voteBButton = document.getElementById("voteB");
+      const voteStatus = document.getElementById("voteStatus");
+
+      const VOTE_KEY = "ab_vote_done";
+
+      function setButtonsDisabled(disabled) {
+        [voteAButton, voteBButton].forEach((btn) => {
+          btn.disabled = disabled;
+          btn.classList.toggle("disabled", disabled);
+        });
+      }
+
+      function setVotedUI(choice) {
+        setButtonsDisabled(true);
+        voteStatus.textContent = `「${choice}」に投票しました。`;
+        voteStatus.classList.remove("error");
+        voteStatus.classList.add("voted");
+      }
+
+      function setErrorUI(message) {
+        voteStatus.textContent = message;
+        voteStatus.classList.remove("voted");
+        voteStatus.classList.add("error");
+      }
+
+      const stored = localStorage.getItem(VOTE_KEY);
+      if (stored === "A" || stored === "B") {
+        setVotedUI(stored);
+      }
+
+      async function sendVote(choice) {
+        try {
+          setButtonsDisabled(true);
+          voteStatus.textContent = "送信中…";
+          voteStatus.classList.remove("voted", "error");
+
+          const res = await fetch("/vote", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ choice }),
+          });
+
+          if (!res.ok) throw new Error("サーバーエラー");
+
+          localStorage.setItem(VOTE_KEY, choice);
+          setVotedUI(choice);
+        } catch (e) {
+          console.error(e);
+          setButtonsDisabled(false);
+          setErrorUI("投票に失敗しました。時間をおいて再度お試しください。");
+        }
+      }
+
+      voteAButton.addEventListener("click", () => sendVote("A"));
+      voteBButton.addEventListener("click", () => sendVote("B"));
+    })();
+  </script>
+</body>
+</html>
