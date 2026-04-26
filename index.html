@@ -52,7 +52,7 @@
 <!-- ロゴ画像 -->
 <img src="logo.png" alt="LILIUMロゴ" class="logo">
 
-<h1>Youtubeログインしてから開始ボタンを押してね！</h1>
+<h1>YouTube にログインしてから開始ボタンを押してね！</h1>
 
 <!-- YouTubeログインボタン -->
 <button class="btn btn-login" id="btnLogin">
@@ -66,9 +66,9 @@
 
 <script>
   document.getElementById("btnLogin").addEventListener("click", () => {
-    const youtubeURL = "https://www.youtube.com/live_chat?v=CfFqv5FfQFU";
+    const youtubeURL = "https://accounts.google.com/ServiceLogin?service=youtube";
 
-    // 新規タブで開く（最も安定）
+    // 新規タブで YouTube ログインページを開く
     window.open(youtubeURL, "_blank");
   });
 </script>
