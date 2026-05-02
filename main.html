@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
@@ -27,14 +27,12 @@
         sans-serif;
     }
 
-    /* ページ全幅に広げる */
     .page {
       width: 100%;
       margin: 0;
       padding: 8px;
     }
 
-    /* PCレイアウト（1024px以上） */
     @media (min-width: 1024px) {
       .layout {
         display: grid;
@@ -73,7 +71,6 @@
         gap: 8px;
       }
 
-      /* ← PC では高さを固定しない（残り全部使う） */
       .chat-wrapper {
         flex: 1;
         border: 1px solid var(--border-color);
@@ -88,7 +85,6 @@
       }
     }
 
-    /* スマホレイアウト（1023px以下） */
     @media (max-width: 1023px) {
       .layout {
         display: flex;
@@ -111,7 +107,6 @@
         gap: 8px;
       }
 
-      /* ← スマホだけ高さ固定 */
       .chat-wrapper {
         border: 1px solid var(--border-color);
         border-radius: 8px;
@@ -197,7 +192,6 @@
 <body>
   <div class="page">
     <div class="layout">
-      <!-- 左カラム：YouTubeライブ映像 -->
       <div class="left-column">
         <div class="video-wrapper">
           <iframe
@@ -208,7 +202,6 @@
         </div>
       </div>
 
-      <!-- 右カラム：A/Bボタン + チャット欄 -->
       <div class="right-column">
         <div class="vote-area">
           <div class="vote-title">どちらに投票しますか？</div>
@@ -226,7 +219,6 @@
           ></iframe>
         </div>
 
-        <!-- 再表示ボタン -->
         <div style="margin-top: 4px; font-size: 12px;">
           ※ チャットが表示されない場合は、YouTube にログインした後、
           下のボタンを押してください。
@@ -244,6 +236,7 @@
       const voteBButton = document.getElementById("voteB");
       const voteStatus = document.getElementById("voteStatus");
 
+      const API = "https://script.google.com/macros/s/AKfycbwqh4pdDAndUZQM2taDoBs_wV8D-zYrm6S7cJ8mWiUde0dE79rLm-lZKOImAZ6nz5IpRg/exec";
       const VOTE_KEY = "ab_vote_done";
 
       function setButtonsDisabled(disabled) {
@@ -277,7 +270,7 @@
           voteStatus.textContent = "送信中…";
           voteStatus.classList.remove("voted", "error");
 
-          const res = await fetch("/vote", {
+          const res = await fetch(API, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ choice }),
@@ -297,7 +290,6 @@
       voteAButton.addEventListener("click", () => sendVote("A"));
       voteBButton.addEventListener("click", () => sendVote("B"));
 
-      /* 再表示ボタン */
       const reloadBtn = document.getElementById("reloadAfterLogin");
       if (reloadBtn) {
         reloadBtn.addEventListener("click", () => {
