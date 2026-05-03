@@ -9,7 +9,13 @@
   const voteBButton = document.getElementById("voteB");
   const voteStatus = document.getElementById("voteStatus");
 
+  const liveVideo = document.getElementById("liveVideo");
+  const liveChat = document.getElementById("liveChat");
+  const videoPlaceholder = document.getElementById("videoPlaceholder");
+  const chatPlaceholder = document.getElementById("chatPlaceholder");
+
   let lastTotal = null;
+  let lastVideoId = null;
 
   function getUserId() {
     let id = localStorage.getItem(USER_KEY);
@@ -45,28 +51,50 @@
   }
 
   // ------------------------
-  // 🔥 状態監視
+  // 配信ID + 投票状態監視
   // ------------------------
   async function pollStatus() {
     try {
       const res = await fetch(API);
       const data = await res.json();
 
+      // ------------------------
+      // 投票リセット検知
+      // ------------------------
       const total = Number(data.a) + Number(data.b);
-
-      // 初回
-      if (lastTotal === null) {
-        lastTotal = total;
-        return;
-      }
-
-      // 🔴 リセット検知（合計が減ったら）
-      if (total < lastTotal) {
+      if (lastTotal !== null && total < lastTotal) {
         localStorage.removeItem(VOTE_KEY);
         resetUI();
       }
-
       lastTotal = total;
+
+      // ------------------------
+      // 配信ID更新
+      // ------------------------
+      const videoId = data.latestVideoId || null;
+      if (videoId !== lastVideoId) {
+        lastVideoId = videoId;
+
+        if (videoId) {
+          // 配信中
+          liveVideo.src = `https://www.youtube.com/embed/${videoId}`;
+          liveVideo.style.display = "block";
+          videoPlaceholder.style.display = "none";
+
+          liveChat.src = `https://www.youtube.com/live_chat?v=${videoId}&embed_domain=${location.hostname}`;
+          liveChat.style.display = "block";
+          chatPlaceholder.style.display = "none";
+        } else {
+          // 配信未開始
+          liveVideo.src = "";
+          liveVideo.style.display = "none";
+          videoPlaceholder.style.display = "block";
+
+          liveChat.src = "";
+          liveChat.style.display = "none";
+          chatPlaceholder.style.display = "block";
+        }
+      }
 
     } catch (e) {
       console.error("poll error", e);
@@ -74,22 +102,8 @@
   }
 
   // ------------------------
-  // 初期状態反映
+  // 投票送信
   // ------------------------
-  async function init() {
-    // 即チェック
-    await pollStatus();
-
-    // 保存状態反映
-    const stored = localStorage.getItem(VOTE_KEY);
-    if (stored) setVotedUI(stored);
-  }
-
-  // 60秒ごと
-  setInterval(pollStatus, 60000);
-
-  // ------------------------
-
   async function sendVote(choice) {
     try {
       setButtonsDisabled(true);
@@ -124,7 +138,21 @@
 
   document.getElementById("reloadAfterLogin").onclick = () => location.reload();
 
-  // 初期化実行
+  // ------------------------
+  // 初期化
+  // ------------------------
+  async function init() {
+    // 即チェック
+    await pollStatus();
+
+    // 投票状態反映
+    const stored = localStorage.getItem(VOTE_KEY);
+    if (stored) setVotedUI(stored);
+
+    // 60秒ごとに監視
+    setInterval(pollStatus, 60000);
+  }
+
   init();
 
 })();
