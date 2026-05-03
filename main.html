@@ -69,7 +69,9 @@
 <script>
 (function () {
 
-  const API = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"; // GAS URL
+  // ★ 更新済み GAS URL
+  const API = "https://script.google.com/macros/s/AKfycbwqh4pdDAndUZQM2taDoBs_wV8D-zYrm6S7cJ8mWiUde0dE79rLm-lZKOImAZ6nz5IpRg/exec";
+
   const VOTE_KEY = "ab_vote_done";
   const USER_KEY = "ab_user_id";
 
@@ -129,17 +131,13 @@
 
       const total = Number(data.a) + Number(data.b);
 
-      // ------------------------
-      // 自動リセット判定
-      // ------------------------
+      // リセット判定：total=0 または resetFlag=true
       if (total === 0 || data.resetFlag) {
         localStorage.removeItem(VOTE_KEY);
         resetUI();
       }
 
-      // ------------------------
       // 配信ID更新
-      // ------------------------
       const videoId = data.latestVideoId || null;
       if (videoId !== lastVideoId) {
         lastVideoId = videoId;
@@ -163,7 +161,7 @@
         }
       }
 
-      // 前回 total 保存（減少チェック用）
+      // lastTotal 保存＆減少チェック
       if (lastTotal === null) lastTotal = total;
       else if (total < lastTotal) {
         localStorage.removeItem(VOTE_KEY);
@@ -196,9 +194,7 @@
 
       const data = await res.json();
 
-      if (!data.ok) {
-        throw new Error(data.error || "失敗");
-      }
+      if (!data.ok) throw new Error(data.error || "失敗");
 
       localStorage.setItem(VOTE_KEY, choice);
       setVotedUI(choice);
