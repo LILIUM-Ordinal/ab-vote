@@ -15,10 +15,8 @@
     }
 
     * { box-sizing: border-box; }
-
     body { margin:0; padding:0; background: var(--bg-color); color: var(--text-color); font-family: system-ui, sans-serif; }
     .page { width:100%; padding:8px; }
-
     .layout { display:grid; grid-template-columns:2fr 1.2fr; gap:8px; }
     .video-wrapper, .chat-wrapper { border:1px solid var(--border-color); border-radius:8px; overflow:hidden; margin-bottom:8px; }
     .vote-area { border:1px solid var(--border-color); border-radius:8px; padding:8px; display:flex; flex-direction:column; gap:8px; margin-bottom:8px; }
@@ -129,21 +127,24 @@
       const res = await fetch(API);
       const data = await res.json();
 
-      // 投票リセット検知
       const total = Number(data.a) + Number(data.b);
-      if (lastTotal !== null && total < lastTotal) {
+
+      // ------------------------
+      // 自動リセット判定
+      // ------------------------
+      if (total === 0 || data.resetFlag) {
         localStorage.removeItem(VOTE_KEY);
         resetUI();
       }
-      lastTotal = total;
 
+      // ------------------------
       // 配信ID更新
+      // ------------------------
       const videoId = data.latestVideoId || null;
       if (videoId !== lastVideoId) {
         lastVideoId = videoId;
 
         if (videoId) {
-          // 配信中
           liveVideo.src = `https://www.youtube.com/embed/${videoId}`;
           liveVideo.style.display = "block";
           videoPlaceholder.style.display = "none";
@@ -152,7 +153,6 @@
           liveChat.style.display = "block";
           chatPlaceholder.style.display = "none";
         } else {
-          // 配信未開始
           liveVideo.src = "";
           liveVideo.style.display = "none";
           videoPlaceholder.style.display = "block";
@@ -161,6 +161,16 @@
           liveChat.style.display = "none";
           chatPlaceholder.style.display = "block";
         }
+      }
+
+      // 前回 total 保存（減少チェック用）
+      if (lastTotal === null) lastTotal = total;
+      else if (total < lastTotal) {
+        localStorage.removeItem(VOTE_KEY);
+        resetUI();
+        lastTotal = total;
+      } else {
+        lastTotal = total;
       }
 
     } catch (e) {
@@ -200,7 +210,9 @@
     }
   }
 
-  // イベント設定（null チェックで安全化）
+  // ------------------------
+  // イベント設定（安全）
+  // ------------------------
   if (voteAButton) voteAButton.onclick = () => sendVote("A");
   if (voteBButton) voteBButton.onclick = () => sendVote("B");
   if (reloadBtn) reloadBtn.onclick = () => location.reload();
