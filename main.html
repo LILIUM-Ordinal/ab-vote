@@ -16,17 +16,17 @@
 
     * { box-sizing: border-box; }
 
-    body { margin: 0; padding: 0; background: var(--bg-color); color: var(--text-color); font-family: system-ui, sans-serif; }
-    .page { width: 100%; padding: 8px; }
+    body { margin:0; padding:0; background: var(--bg-color); color: var(--text-color); font-family: system-ui, sans-serif; }
+    .page { width:100%; padding:8px; }
 
-    .layout { display: grid; grid-template-columns: 2fr 1.2fr; gap: 8px; }
-    .video-wrapper, .chat-wrapper { border:1px solid var(--border-color); border-radius: 8px; overflow: hidden; }
-    .vote-area { border:1px solid var(--border-color); border-radius: 8px; padding:8px; display:flex; flex-direction:column; gap:8px; }
+    .layout { display:grid; grid-template-columns:2fr 1.2fr; gap:8px; }
+    .video-wrapper, .chat-wrapper { border:1px solid var(--border-color); border-radius:8px; overflow:hidden; margin-bottom:8px; }
+    .vote-area { border:1px solid var(--border-color); border-radius:8px; padding:8px; display:flex; flex-direction:column; gap:8px; margin-bottom:8px; }
     .vote-buttons { display:flex; gap:8px; }
     .vote-button { flex:1; padding:12px; border:none; border-radius:999px; color:#fff; font-weight:bold; cursor:pointer; }
     .vote-button-a { background:var(--button-a); }
     .vote-button-b { background:var(--button-b); }
-    .vote-button.disabled { background: var(--button-disabled); cursor: default; }
+    .vote-button.disabled { background:var(--button-disabled); cursor:default; }
     .vote-status { font-size:13px; min-height:1.2em; }
     .vote-status.voted { color:green; }
     .vote-status.error { color:red; }
@@ -37,38 +37,35 @@
 
 <body>
 <div class="page">
-  <div class="layout">
-    <!-- 動画 -->
-    <div class="video-wrapper" id="videoWrapper">
-      <iframe id="liveVideo" style="display:none;"></iframe>
-      <img id="videoPlaceholder" src="waiting.png" />
-    </div>
 
-    <!-- 右カラム -->
-    <div>
-      <!-- 投票 -->
-      <div class="vote-area">
-        <div>どちらに投票しますか？</div>
-        <div class="vote-buttons">
-          <button id="voteA" class="vote-button vote-button-a">A に投票</button>
-          <button id="voteB" class="vote-button vote-button-b">B に投票</button>
-        </div>
-        <div id="voteStatus" class="vote-status"></div>
-      </div>
-
-      <!-- チャット -->
-      <div class="chat-wrapper" id="chatWrapper">
-        <iframe id="liveChat" style="display:none;"></iframe>
-        <img id="chatPlaceholder" src="chat_waiting.png" />
-      </div>
-
-      <!-- リロードボタン -->
-      <div style="font-size:12px; margin-top:4px;">
-        チャットが表示されない場合はログイン後リロードしてください。
-        <button id="reloadAfterLogin">再表示</button>
-      </div>
-    </div>
+  <!-- 動画 -->
+  <div class="video-wrapper" id="videoWrapper">
+    <iframe id="liveVideo" style="display:none;"></iframe>
+    <img id="videoPlaceholder" src="waiting.png" />
   </div>
+
+  <!-- 投票 -->
+  <div class="vote-area">
+    <div>どちらに投票しますか？</div>
+    <div class="vote-buttons">
+      <button id="voteA" class="vote-button vote-button-a">A に投票</button>
+      <button id="voteB" class="vote-button vote-button-b">B に投票</button>
+    </div>
+    <div id="voteStatus" class="vote-status"></div>
+  </div>
+
+  <!-- チャット -->
+  <div class="chat-wrapper" id="chatWrapper">
+    <iframe id="liveChat" style="display:none;"></iframe>
+    <img id="chatPlaceholder" src="chat_waiting.png" />
+  </div>
+
+  <!-- リロードボタン -->
+  <div style="font-size:12px; margin-top:4px;">
+    チャットが表示されない場合はログイン後リロードしてください。
+    <button id="reloadAfterLogin">再表示</button>
+  </div>
+
 </div>
 
 <script>
@@ -203,9 +200,9 @@
     }
   }
 
-  voteAButton.onclick = () => sendVote("A");
-  voteBButton.onclick = () => sendVote("B");
-
+  // イベント設定（null チェックで安全化）
+  if (voteAButton) voteAButton.onclick = () => sendVote("A");
+  if (voteBButton) voteBButton.onclick = () => sendVote("B");
   if (reloadBtn) reloadBtn.onclick = () => location.reload();
 
   // ------------------------
@@ -224,3 +221,5 @@
 
 })();
 </script>
+</body>
+</html>
