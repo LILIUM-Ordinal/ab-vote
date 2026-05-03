@@ -69,7 +69,6 @@
 <script>
 (function () {
 
-  // ★ 更新済み GAS URL
   const API = "https://script.google.com/macros/s/AKfycbwqh4pdDAndUZQM2taDoBs_wV8D-zYrm6S7cJ8mWiUde0dE79rLm-lZKOImAZ6nz5IpRg/exec";
 
   const VOTE_KEY = "ab_vote_done";
@@ -137,12 +136,16 @@
         resetUI();
       }
 
-      // 配信ID更新
+      // 配信中でない場合は投票できない
       const videoId = data.latestVideoId || null;
-      if (videoId !== lastVideoId) {
-        lastVideoId = videoId;
+      if (!videoId) {
+        setButtonsDisabled(true);
+        voteStatus.textContent = "現在配信中ではないため、投票できません。";
+        voteStatus.className = "vote-status error";
+      } else {
+        if (videoId !== lastVideoId) {
+          lastVideoId = videoId;
 
-        if (videoId) {
           liveVideo.src = `https://www.youtube.com/embed/${videoId}`;
           liveVideo.style.display = "block";
           videoPlaceholder.style.display = "none";
@@ -150,18 +153,10 @@
           liveChat.src = `https://www.youtube.com/live_chat?v=${videoId}&embed_domain=${location.hostname}`;
           liveChat.style.display = "block";
           chatPlaceholder.style.display = "none";
-        } else {
-          liveVideo.src = "";
-          liveVideo.style.display = "none";
-          videoPlaceholder.style.display = "block";
-
-          liveChat.src = "";
-          liveChat.style.display = "none";
-          chatPlaceholder.style.display = "block";
         }
       }
 
-      // lastTotal 保存＆減少チェック
+      // 前回 total 保存（減少チェック用）
       if (lastTotal === null) lastTotal = total;
       else if (total < lastTotal) {
         localStorage.removeItem(VOTE_KEY);
